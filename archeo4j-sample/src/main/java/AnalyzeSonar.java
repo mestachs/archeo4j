@@ -12,7 +12,7 @@ public class AnalyzeSonar {
 
       @Override
       public String toCatalogPath() {
-        return "/tmp";
+        return "../..";
       }
 
       @Override
@@ -25,5 +25,8 @@ public class AnalyzeSonar {
 
     catalogService.whoIsUsing("TendencyAnalyser", ".*");
 
+    catalogService.methodsAnnotatedWith("Deprecated", ".*");
+
+    catalogService.classAnnotatedWith("@javax.persistence.Entity", ".*");
   }
 }

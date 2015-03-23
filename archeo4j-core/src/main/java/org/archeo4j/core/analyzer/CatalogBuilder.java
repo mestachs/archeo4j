@@ -22,10 +22,16 @@ import org.archeo4j.core.model.AnalyzedCatalog;
 public class CatalogBuilder {
   private AnalyzisConfig analyzisConfig;
   private String catalogPath;
-  
+
   public CatalogBuilder(AnalyzisConfig analyzisConfig) {
     this.analyzisConfig = analyzisConfig;
-    this.catalogPath = analyzisConfig.toCatalogPath() + File.separator + "catalog.ser";
+    try {
+      this.catalogPath =
+          new File(analyzisConfig.toCatalogPath() + File.separator + "catalog.ser").getCanonicalFile().getAbsolutePath();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
 
 
@@ -34,6 +40,7 @@ public class CatalogBuilder {
     AnalyzedCatalog catalog = null;
     try {
       catalog = loadCatalog();
+      throw new Exception();
     } catch (Exception e) {
       catalog = buildCatalog();
       storeCatalog(catalog);

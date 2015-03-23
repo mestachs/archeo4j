@@ -26,6 +26,7 @@ public class AnalyzedArtefact implements Serializable {
   private Map<String, AnalyzedClass> classes = new HashMap<String, AnalyzedClass>();
 
   private AnalyzedArtefact bundledJar;
+  private ScmInfos scm;
 
   public AnalyzedArtefact(String name) {
     this.name = name;
@@ -95,7 +96,14 @@ public class AnalyzedArtefact implements Serializable {
 
   private void setBundledBy(AnalyzedArtefact bundledJar) {
     this.bundledJar = bundledJar;
+  }
 
+  public Optional<ScmInfos> getScm() {
+    return Optional.ofNullable(scm);
+  }
+
+  public void setScm(ScmInfos scm) {
+    this.scm = scm;
   }
 
   public Optional<String> getGAV() {
@@ -104,13 +112,15 @@ public class AnalyzedArtefact implements Serializable {
   }
 
   public String getDisplayName() {
-    return getGAV().orElse(getName());
+    return getGAV().orElse(getName()) + " "
+        + getScm().map(scm -> scm.getDisplayConnection()).orElse("");
   }
 
   @Override
   public String toString() {
     return "AnalyzedArtefact [name=" + name + ", groupId=" + groupId + ", artefactId=" + artefactId
-        + ", version=" + version + ", packaging=" + packaging + "]";
+        + ", version=" + version + ", packaging=" + packaging + ", scm="
+        + getScm().map(scm -> scm.getDisplayConnection()).orElse("") + "]";
   }
 
   public List<AnalyzedMethod> getMethods() {

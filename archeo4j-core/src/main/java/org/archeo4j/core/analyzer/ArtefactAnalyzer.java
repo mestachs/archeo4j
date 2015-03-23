@@ -3,16 +3,25 @@ package org.archeo4j.core.analyzer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.archeo4j.core.model.AnalyzedArtefact;
 import org.archeo4j.core.model.AnalyzedClass;
+import org.archeo4j.core.model.ScmInfos;
 
+import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.CharStreams;
 
 public class ArtefactAnalyzer {
   private AnalyzisConfig analyzisConfig;
@@ -39,6 +48,9 @@ public class ArtefactAnalyzer {
         if (isJar(zipEntry)) {
           analyzeInnerJar(analyzedArtefact, jarFile, zipEntry);
         }
+        if (isMavenPom(zipEntry)) {
+          assignMavenScm(analyzedArtefact, new String(toBytes(jarFile, zipEntry)));
+        }
         if (isMavenProperties(zipEntry)) {
           assignMavenProperties(new ByteArrayInputStream(toBytes(jarFile, zipEntry)),
               analyzedArtefact);
@@ -49,6 +61,28 @@ public class ArtefactAnalyzer {
     }
     // System.out.println("Analyzed " + analyzedArtefact);
     return analyzedArtefact;
+  }
+
+  private void assignMavenScm(AnalyzedArtefact analyzedArtefact, String pomxml) {
+    // System.out.println(analyzedArtefact + " " + pomxml);
+
+    List<String> extractionPatterns =
+        Arrays
+            .asList("<connection>(.*)</connection>",
+                "<developerConnection>(.*)</developerConnection>", "<url>(.*)</url>",
+                "<tag>(.*)</tag>");
+
+    List<String> scminfos = extractionPatterns.stream().map(regexp -> {
+      Matcher matcher = Pattern.compile(regexp).matcher(pomxml);
+
+      return matcher.find() ? matcher.group(1) : null;
+    }).collect(Collectors.toList());
+    ScmInfos scm = new ScmInfos();
+    scm.setConnection(scminfos.get(0));
+    scm.setDeveloperConnection(scminfos.get(1));
+    scm.setUrl(scminfos.get(2));
+    scm.setTag(scminfos.get(3));
+    analyzedArtefact.setScm(scm);
   }
 
   private void closeQuietly(JarFile jarFile) {
@@ -71,6 +105,16 @@ public class ArtefactAnalyzer {
     }
   }
 
+  private boolean isMavenPom(JarEntry zipEntry) {
+    return zipEntry != null && zipEntry.getName().startsWith("META-INF")
+        && zipEntry.getName().endsWith("pom.xml");
+  }
+
+  private boolean isMavenProperties(JarEntry zipEntry) {
+    return zipEntry != null && zipEntry.getName().startsWith("META-INF")
+        && zipEntry.getName().endsWith("pom.properties");
+  }
+
   private byte[] toBytes(JarFile jarFile, JarEntry zipEntry) {
     try {
       return ByteStreams.toByteArray(jarFile.getInputStream(zipEntry));
@@ -79,13 +123,7 @@ public class ArtefactAnalyzer {
     }
   }
 
-  private boolean isMavenProperties(JarEntry zipEntry) {
-    if (zipEntry != null && zipEntry.getName().startsWith("META-INF")
-        && zipEntry.getName().endsWith("pom.properties")) {
-      return true;
-    }
-    return false;
-  }
+
 
   private void analyzeInnerJar(AnalyzedArtefact analyzedArtefact, JarFile jarFile, JarEntry zipEntry) {
 
@@ -111,6 +149,9 @@ public class ArtefactAnalyzer {
         innerEntry = jarIS.getNextJarEntry();
         if (isMavenProperties(innerEntry)) {
           assignMavenProperties(jarIS, bundledJar);
+        }
+        if (isMavenPom(innerEntry)) {
+          assignMavenScm(bundledJar, CharStreams.toString(new InputStreamReader(jarIS)));
         }
       }
       jarIS.close();

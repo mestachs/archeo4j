@@ -13,9 +13,18 @@ public class AnalyzedClass implements Serializable {
   private String name;
 
   private List<AnalyzedMethod> declaredMethods = new ArrayList<AnalyzedMethod>();
+  private List<AnalyzedAnnotation> annotations = new ArrayList<>();
 
   public AnalyzedClass(String className) {
     this.name = className;
+  }
+
+  public List<AnalyzedAnnotation> getAnnotations() {
+    return annotations;
+  }
+
+  public void setAnnotations(List<AnalyzedAnnotation> annotations) {
+    this.annotations = annotations;
   }
 
   public void addAnalyzedMethod(AnalyzedMethod analyzedMethod) {
@@ -26,8 +35,6 @@ public class AnalyzedClass implements Serializable {
   public String getName() {
     return name;
   }
-
-
 
   @Override
   public String toString() {

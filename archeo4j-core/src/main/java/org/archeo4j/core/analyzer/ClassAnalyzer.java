@@ -9,9 +9,11 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 
+import org.archeo4j.core.model.AnalyzedAnnotation;
 import org.archeo4j.core.model.AnalyzedClass;
 import org.archeo4j.core.model.AnalyzedMethod;
 
@@ -28,15 +30,17 @@ public class ClassAnalyzer {
       return null;
 
     AnalyzedClass analyzedClass = new AnalyzedClass(className);
-
     ClassPool cp = new ClassPool();
     CtClass ctClass = parseClassByteCode(className, classBytes, cp);
+    analyzeClassAnnotations(analyzedClass, ctClass);
 
     try {
       CtMethod[] methods = ctClass.getDeclaredMethods();
 
       for (CtMethod ctMethod : methods) {
+
         AnalyzedMethod method = analyzeMethodCalls(ctMethod);
+        analyzeMethodAnnotations(method, ctMethod);
 
         analyzedClass.addAnalyzedMethod(method);
       }
@@ -44,6 +48,28 @@ public class ClassAnalyzer {
       System.out.println("WARN !! failed to analyze " + className + " " + e.getMessage());
     }
     return analyzedClass;
+  }
+
+  private void analyzeClassAnnotations(AnalyzedClass analyzedClass, CtClass ctClass) {
+    List<AnalyzedAnnotation> annotations = new ArrayList<>();
+    for (Object o : ctClass.getClassFile2().getAttributes()) {
+      if (o instanceof AnnotationsAttribute) {
+        AnnotationsAttribute attribute = (AnnotationsAttribute) o;
+        annotations.add(new AnalyzedAnnotation(attribute.toString()));
+      }
+    }
+    analyzedClass.setAnnotations(annotations);
+  }
+
+  private void analyzeMethodAnnotations(AnalyzedMethod method, CtMethod ctMethod) {
+    List<AnalyzedAnnotation> annotations = new ArrayList<>();
+    for (Object o : ctMethod.getMethodInfo().getAttributes()) {
+      if (o instanceof AnnotationsAttribute) {
+        AnnotationsAttribute attribute = (AnnotationsAttribute) o;
+        annotations.add(new AnalyzedAnnotation(attribute.toString()));
+      }
+    }
+    method.setAnnotations(annotations);
   }
 
   private CtClass parseClassByteCode(String className, byte[] classBytes, ClassPool cp) {

@@ -12,6 +12,7 @@ public class AnalyzedMethod implements Serializable {
   private String methodName;
   private String signature;
   private List<AnalyzedMethod> calledMethods = new ArrayList<AnalyzedMethod>();
+  private List<AnalyzedAnnotation> annotations = new ArrayList<>();
 
   private AnalyzedClass declaringClass;
 
@@ -52,6 +53,15 @@ public class AnalyzedMethod implements Serializable {
 
   public String getSignature() {
     return signature;
+  }
+
+  public List<AnalyzedAnnotation> getAnnotations() {
+  
+    return annotations;
+  }
+
+  public void setAnnotations(List<AnalyzedAnnotation> annotations) {
+    this.annotations = annotations;
   }
 
   @Override
