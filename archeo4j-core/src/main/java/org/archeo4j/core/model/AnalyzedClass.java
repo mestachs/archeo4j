@@ -11,12 +11,31 @@ public class AnalyzedClass implements Serializable {
 
   private AnalyzedArtefact artefact;
   private String name;
+  private String superClassName;
 
   private List<AnalyzedMethod> declaredMethods = new ArrayList<AnalyzedMethod>();
   private List<AnalyzedAnnotation> annotations = new ArrayList<>();
-
+  private List<String> interfaceNames = new ArrayList<>();
+  
   public AnalyzedClass(String className) {
     this.name = className;
+  }
+  
+  public List<String> getInterfaceNames() {
+    return interfaceNames;
+  }
+
+  public void setInterfaceNames(List<String> interfaceNames) {
+    this.interfaceNames = interfaceNames;
+  }
+
+  public String getSuperClassName() {
+    return superClassName;
+  }
+
+
+  public void setSuperClassName(String superClassName) {
+    this.superClassName = superClassName;
   }
 
   public List<AnalyzedAnnotation> getAnnotations() {

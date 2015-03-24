@@ -1,6 +1,7 @@
 package org.archeo4j.core.analyzer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javassist.ByteArrayClassPath;
@@ -10,6 +11,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.annotation.Annotation;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
 
@@ -33,6 +35,7 @@ public class ClassAnalyzer {
     ClassPool cp = new ClassPool();
     CtClass ctClass = parseClassByteCode(className, classBytes, cp);
     analyzeClassAnnotations(analyzedClass, ctClass);
+    analyzeInterfaces(analyzedClass, ctClass);
 
     try {
       CtMethod[] methods = ctClass.getDeclaredMethods();
@@ -46,16 +49,25 @@ public class ClassAnalyzer {
       }
     } catch (RuntimeException e) {
       System.out.println("WARN !! failed to analyze " + className + " " + e.getMessage());
+
     }
     return analyzedClass;
   }
+
+  private void analyzeInterfaces(AnalyzedClass analyzedClass, CtClass ctClass) {
+    analyzedClass.setInterfaceNames(Arrays.asList(ctClass.getClassFile2().getInterfaces()));
+    analyzedClass.setSuperClassName(ctClass.getClassFile2().getSuperclass());
+  }
+
 
   private void analyzeClassAnnotations(AnalyzedClass analyzedClass, CtClass ctClass) {
     List<AnalyzedAnnotation> annotations = new ArrayList<>();
     for (Object o : ctClass.getClassFile2().getAttributes()) {
       if (o instanceof AnnotationsAttribute) {
         AnnotationsAttribute attribute = (AnnotationsAttribute) o;
-        annotations.add(new AnalyzedAnnotation(attribute.toString()));
+        for (Annotation analyzedAnnotation : attribute.getAnnotations()) {
+          annotations.add(new AnalyzedAnnotation(analyzedAnnotation.toString()));
+        }
       }
     }
     analyzedClass.setAnnotations(annotations);
@@ -103,11 +115,14 @@ public class ClassAnalyzer {
   }
 
   private static AnalyzedMethod asAnalyzedMethod(CtMethod ctMethod) {
+    String params =
+        (ctMethod.getLongName().replace(ctMethod.getDeclaringClass().getName(), "").replace("."
+            + ctMethod.getName(), ""));
     return new AnalyzedMethod(ctMethod.getDeclaringClass().getName(), ctMethod.getName(),
-        ctMethod.getSignature());
+        ctMethod.getSignature(), params);
   }
 
-  private static AnalyzedMethod asAnalyzedMethod(MethodCall m) {
+  private static AnalyzedMethod asAnalyzedMethod(MethodCall m) {    
     return new AnalyzedMethod(m.getClassName(), m.getMethodName(), m.getSignature());
   }
 

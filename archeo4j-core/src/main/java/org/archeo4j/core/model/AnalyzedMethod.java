@@ -3,6 +3,7 @@ package org.archeo4j.core.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AnalyzedMethod implements Serializable {
 
@@ -11,6 +12,7 @@ public class AnalyzedMethod implements Serializable {
   private String className;
   private String methodName;
   private String signature;
+  private String params;
   private List<AnalyzedMethod> calledMethods = new ArrayList<AnalyzedMethod>();
   private List<AnalyzedAnnotation> annotations = new ArrayList<>();
 
@@ -21,6 +23,13 @@ public class AnalyzedMethod implements Serializable {
     this.className = className;
     this.methodName = methodName;
     this.signature = signature;
+  }
+
+  public AnalyzedMethod(String className, String methodName, String signature, String params) {
+    this.className = className;
+    this.methodName = methodName;
+    this.signature = signature;
+    this.params = params;
   }
 
   public void setCalledMethods(List<AnalyzedMethod> methodsCalled) {
@@ -48,7 +57,7 @@ public class AnalyzedMethod implements Serializable {
   }
 
   public String getFullyQualifiedMethodName() {
-    return this.getClassName() + "." + this.getMethodName();
+    return this.getClassName() + "." + this.getMethodName() + getParams().orElse("");
   }
 
   public String getSignature() {
@@ -56,7 +65,7 @@ public class AnalyzedMethod implements Serializable {
   }
 
   public List<AnalyzedAnnotation> getAnnotations() {
-  
+
     return annotations;
   }
 
@@ -67,9 +76,13 @@ public class AnalyzedMethod implements Serializable {
   @Override
   public String toString() {
     return "AnalyzedMethod [" + className + "." + methodName + ", signature=" + signature
-        + "calledMethodSize" + calledMethods.size() + "]";
+        + "params=" + params + "]";
   }
 
+  public Optional<String> getParams() {
+    return Optional.ofNullable(params);
+  }
+  
   public boolean match(AnalyzedMethod calledMethod) {
 
     boolean matchMethodName =
