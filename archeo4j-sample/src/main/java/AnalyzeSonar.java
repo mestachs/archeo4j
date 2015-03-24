@@ -25,10 +25,12 @@ public class AnalyzeSonar {
 
     catalogService.whoIsUsing("TendencyAnalyser", ".*");
 
-    catalogService.methodsAnnotatedWith("", ".*");
+    catalogService.methodsAnnotatedWith("@javax.persistence.PreUpdate", ".*");
 
     catalogService.classAnnotatedWith("@javax.persistence.Entity", ".*");
     catalogService.classAnnotatedWith("org.hibernate", ".*");
     catalogService.classAnnotatedWith("Deprecated", ".*");
+    
+    catalogService.duplicatedClasses();
   }
 }

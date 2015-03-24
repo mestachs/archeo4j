@@ -19,7 +19,6 @@ import org.archeo4j.core.model.AnalyzedArtefact;
 import org.archeo4j.core.model.AnalyzedClass;
 import org.archeo4j.core.model.ScmInfos;
 
-import com.google.common.base.Joiner;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 

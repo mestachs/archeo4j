@@ -1,8 +1,15 @@
 package org.archeo4j.core.analyzer;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.archeo4j.core.model.AnalyzedArtefact;
 import org.archeo4j.core.model.AnalyzedCatalog;
+import org.archeo4j.core.model.AnalyzedClass;
+import org.archeo4j.core.model.AnalyzedMethod;
 
 public class CatalogService {
 
@@ -11,6 +18,35 @@ public class CatalogService {
   public CatalogService(AnalyzisConfig analyzisConfig) {
     super();
     this.catalog = new CatalogBuilder(analyzisConfig).loadOrLoadCatalog();
+  }
+
+  public void duplicatedClasses() {
+    System.out.println(" ************** duplicated classes");
+    duplicateClassesStream()
+        .forEach(
+            l -> System.out.println(l.get(0).getName()
+                + " in "
+                + l.stream().map(AnalyzedClass::getArtefact).map(AnalyzedArtefact::getDisplayName)
+                    .collect(Collectors.toList()) + "\n\tconflicting methods "
+                + conflictingMethods(l)));
+  }
+
+  private String conflictingMethods(List<AnalyzedClass> classes) {
+    Set<String> allmethods =
+        classes.stream().flatMap(ac -> ac.getDeclaredMethods().stream())
+            .map(m -> m.getFullyQualifiedMethodName() + " - " + m.getSignature())
+            .collect(Collectors.toSet());
+
+
+
+    return allmethods.toString();
+  }
+
+  private Stream<List<AnalyzedClass>> duplicateClassesStream() {
+    return catalog.analyzedClasses().stream()
+        .collect(Collectors.groupingBy(AnalyzedClass::getName)).values().stream()
+        .sorted((a, b) -> a.get(0).getName().compareTo(b.get(0).getName()))
+        .filter(l -> l.size() > 1);
   }
 
   public void whoIsDeclaring(String string) {
@@ -29,10 +65,10 @@ public class CatalogService {
     catalog
         .analyzedMethods()
         .stream()
+        .filter(m -> m.getFullyQualifiedMethodName().matches(from))
         .filter(
-            m -> (m.getClassName() + "." + m.getMethodName()).matches(from)
-                && m.getCalledMethods().stream()
-                    .anyMatch(called -> called.getFullyQualifiedMethodName().contains(string)))
+            m -> m.getCalledMethods().stream()
+                .anyMatch(called -> called.getFullyQualifiedMethodName().contains(string)))
         .forEach(
             m -> System.out.println(m.getFullyQualifiedMethodName()
                 + " "
