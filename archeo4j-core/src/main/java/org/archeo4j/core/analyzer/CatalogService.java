@@ -1,5 +1,7 @@
 package org.archeo4j.core.analyzer;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +12,7 @@ import org.archeo4j.core.model.AnalyzedArtefact;
 import org.archeo4j.core.model.AnalyzedCatalog;
 import org.archeo4j.core.model.AnalyzedClass;
 import org.archeo4j.core.model.AnalyzedMethod;
+import org.archeo4j.core.model.report.ConflictingMethod;
 
 public class CatalogService {
 
@@ -22,24 +25,54 @@ public class CatalogService {
 
   public void duplicatedClasses() {
     System.out.println(" ************** duplicated classes");
-    duplicateClassesStream()
-        .forEach(
-            l -> System.out.println(l.get(0).getName()
-                + " in "
-                + l.stream().map(AnalyzedClass::getArtefact).map(AnalyzedArtefact::getDisplayName)
-                    .collect(Collectors.toList()) + "\n\tconflicting methods "
-                + conflictingMethods(l)));
+    duplicateClassesStream().forEach(
+        l -> {
+          List<ConflictingMethod> conflictingMethods = conflictingMethodsFor(l);
+          System.out.println(l.get(0).getName()
+              + " ("
+              + l.size()
+              + ")"
+              + " in "
+              + l.stream().map(AnalyzedClass::getArtefact).map(AnalyzedArtefact::getDisplayName)
+                  .collect(Collectors.toList()));
+          if (!conflictingMethods.isEmpty()) {
+            System.out.println("\tconflicting "
+                + conflictingMethods.size()
+                + " methods "
+                + conflictingMethods.stream().map(m -> m.toString())
+                    .collect(Collectors.joining("\n\t\t")));
+          }
+        });
+
+
+
   }
 
-  private String conflictingMethods(List<AnalyzedClass> classes) {
-    Set<String> allmethods =
-        classes.stream().flatMap(ac -> ac.getDeclaredMethods().stream())
-            .map(m -> m.getFullyQualifiedMethodName() + " - " + m.getSignature())
-            .collect(Collectors.toSet());
+  private List<ConflictingMethod> conflictingMethodsFor(List<AnalyzedClass> sameClasses) {
+
+    Set<Object> methods = sameClasses.stream().flatMap(cl -> {
+      return cl.getDeclaredMethods().stream().map(m -> m.getFullyQualifiedMethodName());
+    }).collect(Collectors.toSet());
+    List<String> methodNames = new ArrayList(methods);
+    Collections.sort(methodNames);
+
+    List<ConflictingMethod> conflictingMethods = new ArrayList<>();
+
+    for (String methodName : methodNames) {
+      List<AnalyzedClass> missingMethodInClasses =
+          sameClasses
+              .stream()
+              .filter(
+                  ac -> ac.getDeclaredMethods().stream()
+                      .noneMatch(m -> methodName.equals(m.getFullyQualifiedMethodName())))
+              .collect(Collectors.toList());
+      if (!missingMethodInClasses.isEmpty()) {
+        conflictingMethods.add(new ConflictingMethod(methodName, missingMethodInClasses));
+      }
+    }
 
 
-
-    return allmethods.toString();
+    return conflictingMethods;
   }
 
   private Stream<List<AnalyzedClass>> duplicateClassesStream() {
