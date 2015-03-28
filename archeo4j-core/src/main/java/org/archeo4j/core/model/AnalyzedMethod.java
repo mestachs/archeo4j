@@ -1,6 +1,7 @@
 package org.archeo4j.core.model;
 
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,7 @@ public class AnalyzedMethod implements Serializable {
 
   private static final long serialVersionUID = 3555284400729724970L;
 
+  private int modifiers;
   private String className;
   private String methodName;
   private String signature;
@@ -25,11 +27,13 @@ public class AnalyzedMethod implements Serializable {
     this.signature = signature;
   }
 
-  public AnalyzedMethod(String className, String methodName, String signature, String params) {
+  public AnalyzedMethod(String className, String methodName, String signature, String params,
+      int modifiers) {
     this.className = className;
     this.methodName = methodName;
     this.signature = signature;
     this.params = params;
+    this.modifiers = modifiers;
   }
 
   public void setCalledMethods(List<AnalyzedMethod> methodsCalled) {
@@ -57,7 +61,8 @@ public class AnalyzedMethod implements Serializable {
   }
 
   public String getFullyQualifiedMethodName() {
-    return this.getClassName() + "." + this.getMethodName() + getParams().orElse("");
+    return Modifier.toString(modifiers) + " " + this.getClassName() + "." + this.getMethodName()
+        + getParams().orElse("");
   }
 
   public String getSignature() {
@@ -82,7 +87,7 @@ public class AnalyzedMethod implements Serializable {
   public Optional<String> getParams() {
     return Optional.ofNullable(params);
   }
-  
+
   public boolean match(AnalyzedMethod calledMethod) {
 
     boolean matchMethodName =

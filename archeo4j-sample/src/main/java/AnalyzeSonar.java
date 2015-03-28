@@ -32,5 +32,7 @@ public class AnalyzeSonar {
     catalogService.classAnnotatedWith("Deprecated", ".*");
     
     catalogService.duplicatedClasses();
+    
+    catalogService.sortedArtefacts();
   }
 }

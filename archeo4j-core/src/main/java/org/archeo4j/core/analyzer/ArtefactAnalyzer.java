@@ -1,6 +1,7 @@
 package org.archeo4j.core.analyzer;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,6 +24,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
 public class ArtefactAnalyzer {
+  private static final Pattern maven = Pattern.compile("(.+?)-(\\d.+?(-SNAPSHOT)?)(-(.+?))?\\.jar");
   private AnalyzisConfig analyzisConfig;
 
   public ArtefactAnalyzer(AnalyzisConfig analyzisConfig) {
@@ -57,6 +59,14 @@ public class ArtefactAnalyzer {
       }
     } finally {
       closeQuietly(jarFile);
+    }
+    if (analyzedArtefact.getArtefactId() == null) {
+      try {
+        System.out.println(jarFile.getManifest().getMainAttributes());
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
     // System.out.println("Analyzed " + analyzedArtefact);
     return analyzedArtefact;
@@ -153,10 +163,22 @@ public class ArtefactAnalyzer {
           assignMavenScm(bundledJar, CharStreams.toString(new InputStreamReader(jarIS)));
         }
       }
+      if (bundledJar.getArtefactId() == null) {
+        String fileName = new File(zipEntry.getName()).getName();      
+      
+        Matcher matcher = maven.matcher(fileName);
+        if (matcher.matches()) {
+          bundledJar.setArtefactId(matcher.group(1));
+          bundledJar.setGroupId(matcher.group(1));
+          bundledJar.setVersion(matcher.group(2));
+        }
+      }
       jarIS.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+
     System.out.println("Analyzed " + bundledJar);
   }
 

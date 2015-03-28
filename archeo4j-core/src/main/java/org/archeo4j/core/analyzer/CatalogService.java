@@ -13,6 +13,7 @@ import org.archeo4j.core.model.AnalyzedCatalog;
 import org.archeo4j.core.model.AnalyzedClass;
 import org.archeo4j.core.model.AnalyzedMethod;
 import org.archeo4j.core.model.report.ConflictingMethod;
+import org.archeo4j.core.support.ArtefactComparator;
 
 public class CatalogService {
 
@@ -139,5 +140,19 @@ public class CatalogService {
         .forEach(
             analyzedClass -> System.out.println(analyzedClass.getName() + " "
                 + analyzedClass.getAnnotations()));
+  }
+
+  public void sortedArtefacts() {
+    catalog
+        .analyzedArtefacts()
+        .stream()
+        .sorted(new ArtefactComparator())
+        .forEach(
+            a -> {
+              System.out.println(a.getDisplayName());
+              a.getBundledAterfacts().values().stream().sorted(new ArtefactComparator())
+                  .forEach(ba -> System.out.println("\t" + ba.getDisplayName()));
+            });
+
   }
 }

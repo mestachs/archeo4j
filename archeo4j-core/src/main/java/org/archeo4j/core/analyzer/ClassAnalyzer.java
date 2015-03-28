@@ -1,5 +1,6 @@
 package org.archeo4j.core.analyzer;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +97,7 @@ public class ClassAnalyzer {
   }
 
   private AnalyzedMethod analyzeMethodCalls(CtMethod ctMethod) {
+
     final List<AnalyzedMethod> methodsCalled = new ArrayList<AnalyzedMethod>();
     try {
       ctMethod.instrument(new ExprEditor() {
@@ -118,11 +120,13 @@ public class ClassAnalyzer {
     String params =
         (ctMethod.getLongName().replace(ctMethod.getDeclaringClass().getName(), "").replace("."
             + ctMethod.getName(), ""));
+
     return new AnalyzedMethod(ctMethod.getDeclaringClass().getName(), ctMethod.getName(),
-        ctMethod.getSignature(), params);
+        ctMethod.getGenericSignature() != null ? ctMethod.getGenericSignature()
+            : ctMethod.getSignature(), params, ctMethod.getModifiers());
   }
 
-  private static AnalyzedMethod asAnalyzedMethod(MethodCall m) {    
+  private static AnalyzedMethod asAnalyzedMethod(MethodCall m) {
     return new AnalyzedMethod(m.getClassName(), m.getMethodName(), m.getSignature());
   }
 

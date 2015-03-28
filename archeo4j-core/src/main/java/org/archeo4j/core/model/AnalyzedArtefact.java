@@ -57,6 +57,10 @@ public class AnalyzedArtefact implements Serializable {
     return version;
   }
 
+  public Version getArtefactVersion() {
+    return version == null ? null : new Version(version);
+  }
+
   public void setVersion(String version) {
     this.version = version;
   }

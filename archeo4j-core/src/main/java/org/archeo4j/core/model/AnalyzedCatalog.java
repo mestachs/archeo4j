@@ -23,4 +23,8 @@ public class AnalyzedCatalog implements Serializable {
     return artefacts.stream().flatMap(artefact -> artefact.getClasses().stream())
         .collect(Collectors.toList());
   }
+  
+  public List<AnalyzedArtefact> analyzedArtefacts() {
+    return artefacts;
+  }
 }
