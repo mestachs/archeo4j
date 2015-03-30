@@ -2,7 +2,6 @@ package org.archeo4j.core.analyzer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import java.util.stream.Stream;
 import org.archeo4j.core.model.AnalyzedArtefact;
 import org.archeo4j.core.model.AnalyzedCatalog;
 import org.archeo4j.core.model.AnalyzedClass;
-import org.archeo4j.core.model.AnalyzedMethod;
 import org.archeo4j.core.model.report.ConflictingMethod;
 import org.archeo4j.core.support.ArtefactComparator;
 
