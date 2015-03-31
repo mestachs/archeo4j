@@ -1,5 +1,9 @@
 package org.archeo4j.core.model.report;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.archeo4j.core.analyzer.ArtefactsDiffer;
 import org.archeo4j.core.model.AnalyzedArtefact;
 
 public class DiffEntry {
@@ -25,6 +29,16 @@ public class DiffEntry {
 
   public DiffStatus getStatus() {
     return status;
+  }
+
+  public DiffReport getBundleArtefactDiff() {
+    return new ArtefactsDiffer().diff(
+        (before == null ? Collections.emptyList() : new ArrayList<AnalyzedArtefact>(before
+            .getBundledAterfacts()
+            .values())),
+        (after == null ? Collections.emptyList() : new ArrayList<AnalyzedArtefact>(after
+            .getBundledAterfacts()
+            .values())));
   }
 
   @Override

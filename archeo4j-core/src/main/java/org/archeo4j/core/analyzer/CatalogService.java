@@ -17,6 +17,10 @@ public class CatalogService {
 
   private AnalyzedCatalog catalog;
 
+  public AnalyzedCatalog getCatalog() {
+    return catalog;
+  }
+
   public CatalogService(AnalyzisConfig analyzisConfig) {
     super();
     this.catalog = new CatalogBuilder(analyzisConfig).loadOrLoadCatalog();

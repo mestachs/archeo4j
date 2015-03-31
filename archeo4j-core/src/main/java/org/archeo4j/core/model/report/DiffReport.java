@@ -15,6 +15,7 @@ public class DiffReport {
     this.entries.add(entry);
   }
 
+  
   @Override
   public String toString() {
     return getEntries()
