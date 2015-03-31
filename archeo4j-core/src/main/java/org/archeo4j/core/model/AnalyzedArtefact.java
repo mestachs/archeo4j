@@ -140,4 +140,64 @@ public class AnalyzedArtefact implements Serializable {
         bundledAterfacts.values().stream().flatMap(artefact -> artefact.getClasses().stream()))
         .collect(Collectors.toList());
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((artefactId == null) ? 0 : artefactId.hashCode());
+    result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((packaging == null) ? 0 : packaging.hashCode());
+    result = prime * result + ((version == null) ? 0 : version.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof AnalyzedArtefact)) {
+      return false;
+    }
+    AnalyzedArtefact other = (AnalyzedArtefact) obj;
+    if (artefactId == null) {
+      if (other.artefactId != null) {
+        return false;
+      }
+    } else if (!artefactId.equals(other.artefactId)) {
+      return false;
+    }
+    if (groupId == null) {
+      if (other.groupId != null) {
+        return false;
+      }
+    } else if (!groupId.equals(other.groupId)) {
+      return false;
+    }
+    if (name == null) {
+      if (other.name != null) {
+        return false;
+      }
+    } else if (!name.equals(other.name)) {
+      return false;
+    }
+    if (packaging != other.packaging) {
+      return false;
+    }
+    if (version == null) {
+      if (other.version != null) {
+        return false;
+      }
+    } else if (!version.equals(other.version)) {
+      return false;
+    }
+    return true;
+  }
+
+
 }

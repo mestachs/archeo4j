@@ -15,9 +15,23 @@ public class DiffEntry {
     this.status = status;
   }
 
+  public AnalyzedArtefact getBefore() {
+    return before;
+  }
+
+  public AnalyzedArtefact getAfter() {
+    return after;
+  }
+
+  public DiffStatus getStatus() {
+    return status;
+  }
+
   @Override
   public String toString() {
-    return "DiffEntry [status=" + status + ", before=" + before + ", after=" + after + "]";
+    return "DiffEntry [status=" + status + ", before="
+        + (before == null ? "" : before.getDisplayName()) + ", after="
+        + (after == null ? "" : after.getDisplayName()) + "]";
   }
 
 
