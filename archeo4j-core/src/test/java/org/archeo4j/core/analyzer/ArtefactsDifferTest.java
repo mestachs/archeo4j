@@ -31,8 +31,8 @@ public class ArtefactsDifferTest {
   public void itShouldFindUnmodified() throws Exception {
     DiffReport diff =
         createDiff(
-            Arrays.asList(ab_12, gh_13, cd_14, xy_21),
-            Arrays.asList(ef_11, gh_13, ab_13, xy_11));
+            Arrays.asList(ab_12, gh_13, cd_14, xy_21, ij_21, ij_11),
+            Arrays.asList(ef_11, gh_13, ab_13, xy_11, ij_12));
     DiffEntry unmodifiedEntry =
         diff
             .getEntries()

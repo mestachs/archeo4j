@@ -23,15 +23,11 @@ import com.google.common.collect.Sets.SetView;
 public class ArtefactsDiffer {
 
   public DiffReport diff(List<AnalyzedArtefact> rawBefore, List<AnalyzedArtefact> rawAfter) {
-    System.out.println("rawBefore : "
-        + rawBefore.stream().map(a -> a.getDisplayName()).sorted().collect(Collectors.joining()));
-    System.out.println("rawAfter : "
-        + rawAfter.stream().map(a -> a.getDisplayName()).sorted().collect(Collectors.joining()));
+    System.out.println("rawBefore : " + toString(rawBefore));
+    System.out.println("rawAfter : " + toString(rawAfter));
     DiffReport report = new DiffReport();
     Set<AnalyzedArtefact> before = new HashSet<AnalyzedArtefact>(rawBefore);
-
     Set<AnalyzedArtefact> after = new HashSet<AnalyzedArtefact>(rawAfter);
-
 
     SetView<AnalyzedArtefact> unmodified = Sets.intersection(before, after);
     VersionComparator versionComparator = new VersionComparator();
@@ -43,6 +39,8 @@ public class ArtefactsDiffer {
                 unmodifedArtefact,
                 DiffStatus.UNMODIFIED))
         .forEach(removedArtefact -> report.addDiffEntry(removedArtefact));
+    after.removeAll(unmodified);
+    before.removeAll(unmodified);
     Map<String, List<AnalyzedArtefact>> afterByGA = group(after);
 
     Map<String, List<AnalyzedArtefact>> beforeByGA = group(before);
@@ -58,9 +56,7 @@ public class ArtefactsDiffer {
             valueDiff -> {
               Collections.sort(valueDiff.leftValue(), artefactComparator);
               Collections.sort(valueDiff.rightValue(), artefactComparator);
-
-              for (int i = 0; i < valueDiff.leftValue().size(); i++) {
-                AnalyzedArtefact left = valueDiff.leftValue().get(i);
+              for (AnalyzedArtefact left : valueDiff.leftValue()) {
                 Optional<AnalyzedArtefact> right =
                     valueDiff
                         .rightValue()
@@ -71,6 +67,9 @@ public class ArtefactsDiffer {
                                 .getMajor()
                                 .equals(left.getArtefactVersion().getMajor()))
                         .findFirst();
+                if (!right.isPresent() && valueDiff.rightValue().size() == 1) {
+                  right = Optional.of(valueDiff.rightValue().get(0));
+                }
                 if (right.isPresent()) {
                   int compare =
                       versionComparator.compare(left.getArtefactVersion(), right
@@ -106,9 +105,12 @@ public class ArtefactsDiffer {
         .forEach(entry -> report.addDiffEntry(entry));
 
 
-
     System.out.println(report);
     return report;
+  }
+
+  private String toString(List<AnalyzedArtefact> rawBefore) {
+    return rawBefore.stream().map(a -> a.getDisplayName()).sorted().collect(Collectors.joining());
   }
 
   private Map<String, List<AnalyzedArtefact>> group(Set<AnalyzedArtefact> after) {
