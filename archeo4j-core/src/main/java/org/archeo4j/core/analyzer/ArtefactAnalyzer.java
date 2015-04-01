@@ -24,7 +24,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
 public class ArtefactAnalyzer {
-  private static final Pattern maven = Pattern.compile("(.+?)-(\\d.+?(-SNAPSHOT)?)(-(.+?))?\\.jar");
+  private static final Pattern maven = Pattern.compile("(.+?)-(\\d.+?(-SNAPSHOT)?)(-(.+?))?\\.(jar|war)");
   private AnalyzisConfig analyzisConfig;
 
   public ArtefactAnalyzer(AnalyzisConfig analyzisConfig) {
@@ -41,7 +41,9 @@ public class ArtefactAnalyzer {
         if (className != null) {
 
           AnalyzedClass analyzedClass =
-              classAnalyzer.analyzeCallsForClass(className, toBytes(jarFile, zipEntry),
+              classAnalyzer.analyzeCallsForClass(
+                  className,
+                  toBytes(jarFile, zipEntry),
                   jarFile.getName());
           analyzedArtefact.addClass(analyzedClass);
         }
@@ -53,8 +55,20 @@ public class ArtefactAnalyzer {
           assignMavenScm(analyzedArtefact, new String(toBytes(jarFile, zipEntry)));
         }
         if (isMavenProperties(zipEntry)) {
-          assignMavenProperties(new ByteArrayInputStream(toBytes(jarFile, zipEntry)),
+          assignMavenProperties(
+              new ByteArrayInputStream(toBytes(jarFile, zipEntry)),
               analyzedArtefact);
+        }
+      }
+      if (analyzedArtefact.getArtefactId() == null) {
+        String fileName = new File(jarFile.getName()).getName();
+        System.out.println("missing artefacts : " + fileName + " "
+            + maven.matcher(fileName).matches());
+        Matcher matcher = maven.matcher(fileName);
+        if (matcher.matches()) {
+          analyzedArtefact.setArtefactId(matcher.group(1));
+          analyzedArtefact.setGroupId(matcher.group(1));
+          analyzedArtefact.setVersion(matcher.group(2));
         }
       }
     } finally {
@@ -63,7 +77,7 @@ public class ArtefactAnalyzer {
     if (analyzedArtefact.getArtefactId() == null) {
       try {
         System.out.println(jarFile.getManifest().getMainAttributes());
-      } catch (IOException e) {
+      } catch (IOException | IllegalStateException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
@@ -76,10 +90,11 @@ public class ArtefactAnalyzer {
     // System.out.println(analyzedArtefact + " " + pomxml);
 
     List<String> extractionPatterns =
-        Arrays
-            .asList("<connection>(.*)</connection>",
-                "<developerConnection>(.*)</developerConnection>", "<url>(.*)</url>",
-                "<tag>(.*)</tag>");
+        Arrays.asList(
+            "<connection>(.*)</connection>",
+            "<developerConnection>(.*)</developerConnection>",
+            "<url>(.*)</url>",
+            "<tag>(.*)</tag>");
 
     List<String> scminfos = extractionPatterns.stream().map(regexp -> {
       Matcher matcher = Pattern.compile(regexp).matcher(pomxml);
@@ -134,7 +149,8 @@ public class ArtefactAnalyzer {
 
 
 
-  private void analyzeInnerJar(AnalyzedArtefact analyzedArtefact, JarFile jarFile, JarEntry zipEntry) {
+  private void
+      analyzeInnerJar(AnalyzedArtefact analyzedArtefact, JarFile jarFile, JarEntry zipEntry) {
 
     AnalyzedArtefact bundledJar = new AnalyzedArtefact(zipEntry.getName());
     analyzedArtefact.addBundleJar(bundledJar);
@@ -164,8 +180,8 @@ public class ArtefactAnalyzer {
         }
       }
       if (bundledJar.getArtefactId() == null) {
-        String fileName = new File(zipEntry.getName()).getName();      
-      
+        String fileName = new File(zipEntry.getName()).getName();
+
         Matcher matcher = maven.matcher(fileName);
         if (matcher.matches()) {
           bundledJar.setArtefactId(matcher.group(1));
@@ -188,7 +204,10 @@ public class ArtefactAnalyzer {
 
   private String getClassNameForEntry(JarEntry zipEntry) {
     if (zipEntry.getName().endsWith(".class")) {
-      return zipEntry.getName().replace("WEB-INF/classes/", "").replace(".class", "")
+      return zipEntry
+          .getName()
+          .replace("WEB-INF/classes/", "")
+          .replace(".class", "")
           .replace("/", ".");
     } else {
       return null;

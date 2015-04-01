@@ -29,26 +29,32 @@ public class CatalogService {
   public void duplicatedClasses() {
     System.out.println(" ************** duplicated classes");
     duplicateClassesStream().forEach(
-        l -> {
-          List<ConflictingMethod> conflictingMethods = conflictingMethodsFor(l);
-          System.out.println(l.get(0).getName()
-              + " ("
-              + l.size()
-              + ")"
-              + " in "
-              + l.stream().map(AnalyzedClass::getArtefact).map(AnalyzedArtefact::getDisplayName)
-                  .collect(Collectors.toList()));
-          if (!conflictingMethods.isEmpty()) {
-            System.out.println("\tconflicting "
-                + conflictingMethods.size()
-                + " methods "
-                + conflictingMethods.stream().map(m -> m.toString())
-                    .collect(Collectors.joining("\n\t\t")));
-          }
+        ar -> {
+          System.out.println("  ------- duplicated classes "
+              + ar.get(0).get(0).getArtefact().getBundledBy().get().getDisplayName());
+          ar.forEach(classes -> {
+            List<ConflictingMethod> conflictingMethods = conflictingMethodsFor(classes);
+            System.out.println(classes.get(0).getName()
+                + " ("
+                + classes.size()
+                + ")"
+                + " in "
+                + classes
+                    .stream()
+                    .map(AnalyzedClass::getArtefact)
+                    .map(AnalyzedArtefact::getDisplayName)
+                    .collect(Collectors.toList()));
+            if (!conflictingMethods.isEmpty()) {
+              System.out.println("\tconflicting "
+                  + conflictingMethods.size()
+                  + " methods "
+                  + conflictingMethods
+                      .stream()
+                      .map(m -> m.toString())
+                      .collect(Collectors.joining("\n\t\t")));
+            }
+          });
         });
-
-
-
   }
 
   private List<ConflictingMethod> conflictingMethodsFor(List<AnalyzedClass> sameClasses) {
@@ -66,7 +72,9 @@ public class CatalogService {
           sameClasses
               .stream()
               .filter(
-                  ac -> ac.getDeclaredMethods().stream()
+                  ac -> ac
+                      .getDeclaredMethods()
+                      .stream()
                       .noneMatch(m -> methodName.equals(m.getFullyQualifiedMethodName())))
               .collect(Collectors.toList());
       if (!missingMethodInClasses.isEmpty()) {
@@ -78,11 +86,23 @@ public class CatalogService {
     return conflictingMethods;
   }
 
-  private Stream<List<AnalyzedClass>> duplicateClassesStream() {
-    return catalog.analyzedClasses().stream()
-        .collect(Collectors.groupingBy(AnalyzedClass::getName)).values().stream()
-        .sorted((a, b) -> a.get(0).getName().compareTo(b.get(0).getName()))
-        .filter(l -> l.size() > 1);
+  private List<List<List<AnalyzedClass>>> duplicateClassesStream() {
+    List<List<List<AnalyzedClass>>> o =
+        catalog
+            .analyzedArtefacts()
+            .stream()
+            .map(
+                artefact -> artefact
+                    .getClasses()
+                    .stream()
+                    .collect(Collectors.groupingBy(AnalyzedClass::getName))
+                    .values()
+                    .stream()
+                    .sorted((a, b) -> a.get(0).getName().compareTo(b.get(0).getName()))
+                    .filter(l -> l.size() > 1)
+                    .collect(Collectors.toList()))
+            .collect(Collectors.toList());
+    return o;
   }
 
   public void whoIsDeclaring(String string) {
@@ -103,14 +123,19 @@ public class CatalogService {
         .stream()
         .filter(m -> m.getFullyQualifiedMethodName().matches(from))
         .filter(
-            m -> m.getCalledMethods().stream()
+            m -> m
+                .getCalledMethods()
+                .stream()
                 .anyMatch(called -> called.getFullyQualifiedMethodName().contains(string)))
         .forEach(
             m -> System.out.println(m.getFullyQualifiedMethodName()
                 + " "
                 + m.getDeclaringClass().getArtefact().getDisplayName()
                 + "\n calling :\n\t"
-                + m.getCalledMethods().stream().map(cm -> cm.getFullyQualifiedMethodName())
+                + m
+                    .getCalledMethods()
+                    .stream()
+                    .map(cm -> cm.getFullyQualifiedMethodName())
                     .collect(Collectors.joining("\n\t"))));
 
   }
@@ -128,7 +153,10 @@ public class CatalogService {
                 + " "
                 + m.getDeclaringClass().getArtefact().getDisplayName()
                 + "\n calling :\n\t"
-                + m.getAnnotations().stream().map(a -> a.toString())
+                + m
+                    .getAnnotations()
+                    .stream()
+                    .map(a -> a.toString())
                     .collect(Collectors.joining("\n\t"))));
 
   }
@@ -145,6 +173,7 @@ public class CatalogService {
   }
 
   public void sortedArtefacts() {
+    System.out.println("******** sorted artefacts");
     catalog
         .analyzedArtefacts()
         .stream()
@@ -152,7 +181,11 @@ public class CatalogService {
         .forEach(
             a -> {
               System.out.println(a.getDisplayName());
-              a.getBundledAterfacts().values().stream().sorted(new ArtefactComparator())
+              a
+                  .getBundledAterfacts()
+                  .values()
+                  .stream()
+                  .sorted(new ArtefactComparator())
                   .forEach(ba -> System.out.println("\t" + ba.getDisplayName()));
             });
 
