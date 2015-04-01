@@ -116,8 +116,7 @@ public class AnalyzedArtefact implements Serializable {
   }
 
   public String getDisplayName() {
-    return getGAV().orElse(getName()) + " "
-        + getScm().map(scm -> scm.getDisplayConnection()).orElse("");
+    return getGAV().orElse(getName()); // + " " + getScm().map(scm -> scm.getDisplayConnection()).orElse("");
   }
 
   @Override

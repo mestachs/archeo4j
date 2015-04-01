@@ -32,20 +32,16 @@ public class DiffEntry {
   }
 
   public DiffReport getBundleArtefactDiff() {
-    return new ArtefactsDiffer().diff(
-        (before == null ? Collections.emptyList() : new ArrayList<AnalyzedArtefact>(before
-            .getBundledAterfacts()
-            .values())),
-        (after == null ? Collections.emptyList() : new ArrayList<AnalyzedArtefact>(after
-            .getBundledAterfacts()
-            .values())));
+    if (status.equals(DiffStatus.REMOVED) || status.equals(DiffStatus.ADDED)) {
+      return new DiffReport();
+    }
+    return new ArtefactsDiffer()
+        .diff(new ArrayList<AnalyzedArtefact>(before.getBundledAterfacts().values()), new ArrayList<AnalyzedArtefact>(after.getBundledAterfacts().values()));
   }
 
   @Override
   public String toString() {
-    return "DiffEntry [status=" + status + ", before="
-        + (before == null ? "" : before.getDisplayName()) + ", after="
-        + (after == null ? "" : after.getDisplayName()) + "]";
+    return "DiffEntry [status=" + status + ", before=" + (before == null ? "" : before.getDisplayName()) + ", after=" + (after == null ? "" : after.getDisplayName()) + "]";
   }
 
 

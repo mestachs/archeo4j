@@ -15,13 +15,10 @@ public class DiffReport {
     this.entries.add(entry);
   }
 
-  
+
   @Override
   public String toString() {
-    return getEntries()
-        .stream()
-        .sorted((a, b) -> a.getStatus().compareTo(b.getStatus()))
-        .map(e -> e.toString())
+    return getEntries().stream().filter(a -> !a.getStatus().equals(DiffStatus.UNMODIFIED)).sorted((a, b) -> a.getStatus().compareTo(b.getStatus())).map(e -> e.toString())
         .collect(Collectors.joining("\n"));
   }
 }
