@@ -31,27 +31,14 @@ public class CatalogService {
     duplicateClassesStream().forEach(
         ar -> {
           System.out.println("  ------- duplicated classes "
-              + ar.get(0).get(0).getArtefact().getBundledBy().get().getDisplayName());
+              + (ar.isEmpty() ? null : ar.get(0).isEmpty() ? null : ar.get(0).get(0).getArtefact().getBundledBy().map(a -> a.getDisplayName())));
           ar.forEach(classes -> {
             List<ConflictingMethod> conflictingMethods = conflictingMethodsFor(classes);
-            System.out.println(classes.get(0).getName()
-                + " ("
-                + classes.size()
-                + ")"
-                + " in "
-                + classes
-                    .stream()
-                    .map(AnalyzedClass::getArtefact)
-                    .map(AnalyzedArtefact::getDisplayName)
-                    .collect(Collectors.toList()));
             if (!conflictingMethods.isEmpty()) {
-              System.out.println("\tconflicting "
-                  + conflictingMethods.size()
-                  + " methods "
-                  + conflictingMethods
-                      .stream()
-                      .map(m -> m.toString())
-                      .collect(Collectors.joining("\n\t\t")));
+              System.out.println(classes.get(0).getName() + " (" + classes.size() + ")" + " in "
+                  + classes.stream().map(AnalyzedClass::getArtefact).map(AnalyzedArtefact::getDisplayName).collect(Collectors.toList()));
+              System.out.println("\tconflicting " + conflictingMethods.size() + " methods \n\t\t"
+                  + conflictingMethods.stream().map(m -> m.toString()).collect(Collectors.joining("\n\t\t")));
             }
           });
         });
@@ -69,14 +56,7 @@ public class CatalogService {
 
     for (String methodName : methodNames) {
       List<AnalyzedClass> missingMethodInClasses =
-          sameClasses
-              .stream()
-              .filter(
-                  ac -> ac
-                      .getDeclaredMethods()
-                      .stream()
-                      .noneMatch(m -> methodName.equals(m.getFullyQualifiedMethodName())))
-              .collect(Collectors.toList());
+          sameClasses.stream().filter(ac -> ac.getDeclaredMethods().stream().noneMatch(m -> methodName.equals(m.getFullyQualifiedMethodName()))).collect(Collectors.toList());
       if (!missingMethodInClasses.isEmpty()) {
         conflictingMethods.add(new ConflictingMethod(methodName, missingMethodInClasses));
       }
@@ -92,28 +72,15 @@ public class CatalogService {
             .analyzedArtefacts()
             .stream()
             .map(
-                artefact -> artefact
-                    .getClasses()
-                    .stream()
-                    .collect(Collectors.groupingBy(AnalyzedClass::getName))
-                    .values()
-                    .stream()
-                    .sorted((a, b) -> a.get(0).getName().compareTo(b.get(0).getName()))
-                    .filter(l -> l.size() > 1)
-                    .collect(Collectors.toList()))
-            .collect(Collectors.toList());
+                artefact -> artefact.getClasses().stream().collect(Collectors.groupingBy(AnalyzedClass::getName)).values().stream()
+                    .sorted((a, b) -> a.get(0).getName().compareTo(b.get(0).getName())).filter(l -> l.size() > 1).collect(Collectors.toList())).collect(Collectors.toList());
     return o;
   }
 
   public void whoIsDeclaring(String string) {
     System.out.println(" ******* who is declaring " + string);
-    catalog
-        .analyzedClasses()
-        .stream()
-        .filter(analyzedClass -> analyzedClass.getName().contains(string))
-        .forEach(
-            ac -> System.out.println(" " + ac.getArtefact().getDisplayName() + "\n\t"
-                + ac.getDeclaredMethods()));
+    catalog.analyzedClasses().stream().filter(analyzedClass -> analyzedClass.getName().contains(string))
+        .forEach(ac -> System.out.println(" " + ac.getArtefact().getDisplayName() + "\n\t" + ac.getDeclaredMethods()));
   }
 
   public void whoIsUsing(String string, String from) {
@@ -122,21 +89,10 @@ public class CatalogService {
         .analyzedMethods()
         .stream()
         .filter(m -> m.getFullyQualifiedMethodName().matches(from))
-        .filter(
-            m -> m
-                .getCalledMethods()
-                .stream()
-                .anyMatch(called -> called.getFullyQualifiedMethodName().contains(string)))
+        .filter(m -> m.getCalledMethods().stream().anyMatch(called -> called.getFullyQualifiedMethodName().contains(string)))
         .forEach(
-            m -> System.out.println(m.getFullyQualifiedMethodName()
-                + " "
-                + m.getDeclaringClass().getArtefact().getDisplayName()
-                + "\n calling :\n\t"
-                + m
-                    .getCalledMethods()
-                    .stream()
-                    .map(cm -> cm.getFullyQualifiedMethodName())
-                    .collect(Collectors.joining("\n\t"))));
+            m -> System.out.println(m.getFullyQualifiedMethodName() + " " + m.getDeclaringClass().getArtefact().getDisplayName() + "\n calling :\n\t"
+                + m.getCalledMethods().stream().map(cm -> cm.getFullyQualifiedMethodName()).collect(Collectors.joining("\n\t"))));
 
   }
 
@@ -145,49 +101,25 @@ public class CatalogService {
     catalog
         .analyzedMethods()
         .stream()
-        .filter(
-            m -> (m.getClassName() + "." + m.getMethodName()).matches(from)
-                && m.getAnnotations().stream().anyMatch(ann -> ann.toString().contains(annotation)))
+        .filter(m -> (m.getClassName() + "." + m.getMethodName()).matches(from) && m.getAnnotations().stream().anyMatch(ann -> ann.toString().contains(annotation)))
         .forEach(
-            m -> System.out.println(m.getFullyQualifiedMethodName()
-                + " "
-                + m.getDeclaringClass().getArtefact().getDisplayName()
-                + "\n calling :\n\t"
-                + m
-                    .getAnnotations()
-                    .stream()
-                    .map(a -> a.toString())
-                    .collect(Collectors.joining("\n\t"))));
+            m -> System.out.println(m.getFullyQualifiedMethodName() + " " + m.getDeclaringClass().getArtefact().getDisplayName() + "\n calling :\n\t"
+                + m.getAnnotations().stream().map(a -> a.toString()).collect(Collectors.joining("\n\t"))));
 
   }
 
   public void classAnnotatedWith(String annotation, String from) {
     System.out.println(" ******* classes annotated with " + annotation + " from " + from);
-    catalog
-        .analyzedClasses()
-        .stream()
-        .filter(analyzedClass -> analyzedClass.getAnnotations().toString().contains(annotation))
-        .forEach(
-            analyzedClass -> System.out.println(analyzedClass.getName() + " "
-                + analyzedClass.getAnnotations()));
+    catalog.analyzedClasses().stream().filter(analyzedClass -> analyzedClass.getAnnotations().toString().contains(annotation))
+        .forEach(analyzedClass -> System.out.println(analyzedClass.getName() + " " + analyzedClass.getAnnotations()));
   }
 
   public void sortedArtefacts() {
     System.out.println("******** sorted artefacts");
-    catalog
-        .analyzedArtefacts()
-        .stream()
-        .sorted(new ArtefactComparator())
-        .forEach(
-            a -> {
-              System.out.println(a.getDisplayName());
-              a
-                  .getBundledAterfacts()
-                  .values()
-                  .stream()
-                  .sorted(new ArtefactComparator())
-                  .forEach(ba -> System.out.println("\t" + ba.getDisplayName()));
-            });
+    catalog.analyzedArtefacts().stream().sorted(new ArtefactComparator()).forEach(a -> {
+      System.out.println(a.getDisplayName());
+      a.getBundledAterfacts().values().stream().sorted(new ArtefactComparator()).forEach(ba -> System.out.println("\t" + ba.getDisplayName()));
+    });
 
   }
 }

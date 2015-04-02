@@ -28,7 +28,7 @@ public class CatalogBuilder {
     try {
       this.catalogPath =
           new File(analyzisConfig.toCatalogPath() + File.separator + "catalog.ser").getCanonicalFile().getAbsolutePath();
-    } catch (IOException e) {
+    } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
@@ -43,7 +43,7 @@ public class CatalogBuilder {
       throw new Exception();
     } catch (Exception e) {
       catalog = buildCatalog();
-      storeCatalog(catalog);
+      //storeCatalog(catalog);
     }
 
     return catalog;

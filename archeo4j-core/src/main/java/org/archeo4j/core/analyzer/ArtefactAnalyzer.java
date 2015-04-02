@@ -199,7 +199,7 @@ public class ArtefactAnalyzer {
   }
 
   private boolean isJar(JarEntry zipEntry) {
-    return zipEntry.getName().endsWith(".jar");
+    return zipEntry.getName().startsWith("WEB-INF/") && zipEntry.getName().endsWith(".jar");
   }
 
   private String getClassNameForEntry(JarEntry zipEntry) {
