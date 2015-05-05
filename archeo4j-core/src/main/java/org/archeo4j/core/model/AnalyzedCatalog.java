@@ -9,7 +9,7 @@ public class AnalyzedCatalog implements Serializable {
   private static final long serialVersionUID = -5346383553431940923L;
 
   public AnalyzedCatalog(List<AnalyzedArtefact> artefacts) {
-    this.artefacts = artefacts;
+    this.artefacts = artefacts.stream().filter(a -> a != null).collect(Collectors.toList());
   }
 
   private List<AnalyzedArtefact> artefacts;

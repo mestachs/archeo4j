@@ -218,7 +218,8 @@ public class ArtefactAnalyzer {
     try {
       return analyzeJar(new JarFile(jarLocation));
     } catch (IOException e) {
-      throw new RuntimeException("failed to analyze " + jarLocation, e);
+      return null;
+      //throw new RuntimeException("failed to analyze " + jarLocation, e);
     }
   }
 }
