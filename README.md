@@ -20,6 +20,8 @@ You have created a huge SOA / micro services architecture want to answer questio
 
 ## Sample usage
 
+Have a look at [archeo4j-sample](https://github.com/mestachs/archeo4j/blob/master/archeo4j-sample/src/main/java/AnalyzeSonar.java)
+
  * duplicated classes Optional[org.codehaus.sonar:sonar-web:1.3 
 
 ```
