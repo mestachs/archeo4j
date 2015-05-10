@@ -13,6 +13,8 @@ You have created a huge SOA / micro services architecture want to answer questio
   
 ## How ?
 
+Archeo4j will parse the bytecode of your java artifacts and create a catalog, that you can query.
+
   - put all your artifacts (wars, jars) in a directory
   - archeo4j will process wars, bundled jars, classes and will create a catalog   
   - create a small java program or groovy script to answer your questions
