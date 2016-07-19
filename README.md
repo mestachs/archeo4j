@@ -91,3 +91,8 @@ DiffEntry [status=UPGRADED, before=com.thoughtworks.paranamer:paranamer:1.1.2 (W
 DiffEntry [status=UPGRADED, before=jruby-complete:jruby-complete:1.1.1 (WEB-INF/lib/jruby-complete-1.1.1.jar), after=jruby-complete:jruby-complete:1.1.2 (WEB-INF/lib/jruby-complete-1.1.2.jar)]
 DiffEntry [status=UPGRADED, before=hibernate:hibernate:3.2.5.ga (WEB-INF/lib/hibernate-3.2.5.ga.jar), after=hibernate:hibernate:3.2.6.ga (WEB-INF/lib/hibernate-3.2.6.ga.jar)]
 ```
+* Similar projects
+  
+  
+  * https://github.com/benas/jcql
+  * https://jqassistant.org/get-started/
